@@ -22,6 +22,42 @@ $client->setAccessToken($token);
 $oauth2 = new Google_Service_Oauth2($client);
 $userInfo = $oauth2->userinfo->get();
 
-// Example output of user information
+// Convert Google user info to a simple array
+$currentUser = [
+    'id' => $userInfo->id,
+    'name' => $userInfo->name,
+    'email' => $userInfo->email,
+];
+
+// Path to text file where users are stored
+$usersFile = __DIR__ . '/users.txt';
+$existing = [];
+
+if (file_exists($usersFile)) {
+    $lines = file($usersFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        $decoded = json_decode($line, true);
+        if ($decoded) {
+            $existing[] = $decoded;
+        }
+    }
+}
+
+$foundUser = null;
+foreach ($existing as $user) {
+    if ($user['email'] === $currentUser['email']) {
+        $foundUser = $user;
+        break;
+    }
+}
+
+// Append user to file on first login (signup)
+if ($foundUser === null) {
+    file_put_contents($usersFile, json_encode($currentUser) . PHP_EOL, FILE_APPEND);
+    $foundUser = $currentUser;
+}
+
+$_SESSION['user'] = $foundUser;
+
 header('Content-Type: application/json');
-echo json_encode($userInfo);
+echo json_encode($foundUser);

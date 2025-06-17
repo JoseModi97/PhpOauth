@@ -24,3 +24,7 @@ php -S localhost:8000
 ```
 
 Visit `http://localhost:8000/login.php` to initiate the login flow.
+
+When a user logs in for the first time, their Google account information is
+stored in `users.txt`. Subsequent logins will read the stored data so it can be
+accessed later.
